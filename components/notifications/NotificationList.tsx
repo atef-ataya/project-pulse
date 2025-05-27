@@ -1,15 +1,29 @@
 import { formatDistanceToNow } from 'date-fns';
-import { AlertTriangle, Clock, Calendar, CheckCircle, XCircle } from 'lucide-react';
+import {
+  AlertTriangle,
+  Clock,
+  Calendar,
+  CheckCircle,
+  XCircle,
+  Bell,
+} from 'lucide-react';
 import { Notification } from '@/lib/types';
 import { Button } from '@/components/ui/Button';
 
 interface NotificationListProps {
   notifications: Notification[];
   onMarkAsRead: (id: string) => void;
-  onActionTaken: (notification: Notification, action: 'approve' | 'reject') => void;
+  onActionTaken: (
+    notification: Notification,
+    action: 'approve' | 'reject'
+  ) => void;
 }
 
-export function NotificationList({ notifications, onMarkAsRead, onActionTaken }: NotificationListProps) {
+export function NotificationList({
+  notifications,
+  onMarkAsRead,
+  onActionTaken,
+}: NotificationListProps) {
   const getIcon = (type: Notification['type']) => {
     switch (type) {
       case 'deadline-warning':
@@ -29,9 +43,7 @@ export function NotificationList({ notifications, onMarkAsRead, onActionTaken }:
 
   if (notifications.length === 0) {
     return (
-      <div className="p-4 text-center text-gray-500">
-        No notifications
-      </div>
+      <div className="p-4 text-center text-gray-500">No notifications</div>
     );
   }
 
@@ -40,7 +52,9 @@ export function NotificationList({ notifications, onMarkAsRead, onActionTaken }:
       {notifications.map((notification) => (
         <div
           key={notification.id}
-          className={`p-4 border-b hover:bg-gray-50 ${!notification.read ? 'bg-blue-50' : ''}`}
+          className={`p-4 border-b hover:bg-gray-50 ${
+            !notification.read ? 'bg-blue-50' : ''
+          }`}
           onClick={() => !notification.read && onMarkAsRead(notification.id)}
         >
           <div className="flex gap-3">
@@ -60,32 +74,35 @@ export function NotificationList({ notifications, onMarkAsRead, onActionTaken }:
                 </p>
               )}
               <p className="text-xs text-gray-400 mt-2">
-                {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                {formatDistanceToNow(new Date(notification.createdAt), {
+                  addSuffix: true,
+                })}
               </p>
-              {notification.actionRequired && notification.type === 'extension-request' && (
-                <div className="flex gap-2 mt-3">
-                  <Button
-                    size="sm"
-                    variant="primary"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onActionTaken(notification, 'approve');
-                    }}
-                  >
-                    Approve
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onActionTaken(notification, 'reject');
-                    }}
-                  >
-                    Reject
-                  </Button>
-                </div>
-              )}
+              {notification.actionRequired &&
+                notification.type === 'extension-request' && (
+                  <div className="flex gap-2 mt-3">
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onActionTaken(notification, 'approve');
+                      }}
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onActionTaken(notification, 'reject');
+                      }}
+                    >
+                      Reject
+                    </Button>
+                  </div>
+                )}
             </div>
           </div>
         </div>
