@@ -1,6 +1,6 @@
+// hooks/useProjects.ts
 import { useState, useEffect } from 'react';
 import { Project } from '@/lib/types';
-import { MOCK_PROJECTS } from '@/lib/mock-data';
 import { calculateProjectStatus } from '@/lib/utils';
 
 export function useProjects() {
@@ -9,36 +9,47 @@ export function useProjects() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        setLoading(true);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Update project statuses
-        const updatedProjects = MOCK_PROJECTS.map(project => ({
-          ...project,
-          status: calculateProjectStatus(project)
-        }));
-        
-        setProjects(updatedProjects);
-        setError(null);
-      } catch (err) {
-        setError('Failed to fetch projects');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProjects();
   }, []);
 
-  const createProject = async (project: Project) => {
+  const fetchProjects = async () => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 300));
-      setProjects([...projects, project]);
-      return project;
+      setLoading(true);
+      const response = await fetch('/api/projects');
+      if (!response.ok) throw new Error('Failed to fetch projects');
+
+      const data = await response.json();
+
+      // Update project statuses based on current date
+      const projectsWithStatus = data.map((project: Project) => ({
+        ...project,
+        status: calculateProjectStatus(project),
+      }));
+
+      setProjects(projectsWithStatus);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch projects');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createProject = async (
+    project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>
+  ) => {
+    try {
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(project),
+      });
+
+      if (!response.ok) throw new Error('Failed to create project');
+
+      const newProject = await response.json();
+      await fetchProjects(); // Refresh the list
+      return newProject;
     } catch (err) {
       throw new Error('Failed to create project');
     }
@@ -46,11 +57,15 @@ export function useProjects() {
 
   const updateProject = async (id: string, updates: Partial<Project>) => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 300));
-      setProjects(projects.map(p => 
-        p.id === id ? { ...p, ...updates, updatedAt: new Date().toISOString() } : p
-      ));
+      const response = await fetch(`/api/projects/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+
+      if (!response.ok) throw new Error('Failed to update project');
+
+      await fetchProjects(); // Refresh the list
     } catch (err) {
       throw new Error('Failed to update project');
     }
@@ -58,9 +73,13 @@ export function useProjects() {
 
   const deleteProject = async (id: string) => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 300));
-      setProjects(projects.filter(p => p.id !== id));
+      const response = await fetch(`/api/projects/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) throw new Error('Failed to delete project');
+
+      await fetchProjects(); // Refresh the list
     } catch (err) {
       throw new Error('Failed to delete project');
     }
@@ -70,9 +89,9 @@ export function useProjects() {
     projects,
     loading,
     error,
+    fetchProjects,
     createProject,
     updateProject,
     deleteProject,
   };
 }
-

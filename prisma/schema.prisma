@@ -1,0 +1,138 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  name              String
+  role              UserRole  @default(PROJECT)
+  department        Department?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  projects          Project[] @relation("ProjectManager")
+  assignedProjects  ProjectAssignment[]
+  notifications     Notification[]
+  extensionRequests ExtensionRequest[]
+}
+
+model Project {
+  id               String    @id @default(cuid())
+  projectName      String
+  projectManager   User      @relation("ProjectManager", fields: [managerId], references: [id])
+  managerId        String
+  department       Department
+  startDate        DateTime
+  endDate          DateTime
+  priority         Priority
+  percentComplete  Int       @default(0)
+  status           ProjectStatus
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  
+  stakeholders     Stakeholder[]
+  partners         Partner[]
+  assignments      ProjectAssignment[]
+  notifications    Notification[]
+  extensionRequests ExtensionRequest[]
+}
+
+model Stakeholder {
+  id        String   @id @default(cuid())
+  name      String
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Partner {
+  id        String   @id @default(cuid())
+  name      String
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model ProjectAssignment {
+  id        String   @id @default(cuid())
+  userId    String
+  projectId String
+  user      User     @relation(fields: [userId], references: [id])
+  project   Project  @relation(fields: [projectId], references: [id])
+  
+  @@unique([userId, projectId])
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  type        NotificationType
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  message     String
+  read        Boolean  @default(false)
+  actionRequired Boolean @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model ExtensionRequest {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  requestedBy String
+  requester   User     @relation(fields: [requestedBy], references: [id])
+  reason      String
+  newEndDate  DateTime
+  status      ExtensionStatus @default(PENDING)
+  createdAt   DateTime @default(now())
+  reviewedAt  DateTime?
+  reviewedBy  String?
+}
+
+enum UserRole {
+  ADMIN
+  DEPARTMENT
+  PROJECT
+}
+
+enum Department {
+  ENGINEERING
+  MARKETING
+  SALES
+  HR
+  FINANCE
+  OPERATIONS
+}
+
+enum Priority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum ProjectStatus {
+  UPCOMING
+  IN_PROGRESS
+  COMPLETED
+  DELAYED
+}
+
+enum NotificationType {
+  DEADLINE_WARNING
+  EXTENSION_REQUEST
+  PROJECT_DELAYED
+  EXTENSION_APPROVED
+  EXTENSION_REJECTED
+}
+
+enum ExtensionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}

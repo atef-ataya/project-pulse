@@ -1,3 +1,4 @@
+// components/projects/ProjectForm.tsx
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Project } from '@/lib/types';
@@ -9,10 +10,15 @@ import { generateId } from '@/lib/utils';
 
 interface ProjectFormProps {
   project?: Project;
-  onSubmit: (project: Project) => void;
+  onSubmit: (project: any) => void;
+  isSubmitting?: boolean;
 }
 
-export function ProjectForm({ project, onSubmit }: ProjectFormProps) {
+export function ProjectForm({
+  project,
+  onSubmit,
+  isSubmitting = false,
+}: ProjectFormProps) {
   const router = useRouter();
   const [formData, setFormData] = useState({
     projectName: project?.projectName || '',
@@ -29,17 +35,7 @@ export function ProjectForm({ project, onSubmit }: ProjectFormProps) {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    
-    const projectData: Project = {
-      id: project?.id || generateId(),
-      ...formData,
-      stakeholders: formData.stakeholders.split(',').map(s => s.trim()).filter(Boolean),
-      partners: formData.partners.split(',').map(p => p.trim()).filter(Boolean),
-      createdAt: project?.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    onSubmit(projectData);
+    onSubmit(formData);
   };
 
   return (
@@ -49,46 +45,64 @@ export function ProjectForm({ project, onSubmit }: ProjectFormProps) {
           label="Project Name"
           required
           value={formData.projectName}
-          onChange={(e) => setFormData({ ...formData, projectName: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, projectName: e.target.value })
+          }
+          className="dark:bg-gray-700 dark:text-white"
         />
-        
+
         <Input
           label="Project Manager"
           required
           value={formData.projectManager}
-          onChange={(e) => setFormData({ ...formData, projectManager: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, projectManager: e.target.value })
+          }
+          className="dark:bg-gray-700 dark:text-white"
         />
-        
+
         <Select
           label="Department"
           required
           options={DEPARTMENTS}
           value={formData.department}
-          onChange={(e) => setFormData({ ...formData, department: e.target.value as any })}
+          onChange={(e) =>
+            setFormData({ ...formData, department: e.target.value as any })
+          }
+          className="dark:bg-gray-700 dark:text-white"
         />
-        
+
         <Select
           label="Priority"
           required
-          options={PRIORITIES.map(p => ({ value: p.value, label: p.label }))}
+          options={PRIORITIES.map((p) => ({ value: p.value, label: p.label }))}
           value={formData.priority}
-          onChange={(e) => setFormData({ ...formData, priority: e.target.value as any })}
+          onChange={(e) =>
+            setFormData({ ...formData, priority: e.target.value as any })
+          }
+          className="dark:bg-gray-700 dark:text-white"
         />
-        
+
         <Input
           label="Start Date"
           type="date"
           required
           value={formData.startDate}
-          onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, startDate: e.target.value })
+          }
+          className="dark:bg-gray-700 dark:text-white"
         />
-        
+
         <Input
           label="End Date"
           type="date"
           required
           value={formData.endDate}
-          onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, endDate: e.target.value })
+          }
+          className="dark:bg-gray-700 dark:text-white"
         />
       </div>
 
@@ -97,18 +111,24 @@ export function ProjectForm({ project, onSubmit }: ProjectFormProps) {
           label="Stakeholders (comma-separated)"
           placeholder="John Doe, Jane Smith, Marketing Team"
           value={formData.stakeholders}
-          onChange={(e) => setFormData({ ...formData, stakeholders: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, stakeholders: e.target.value })
+          }
+          className="dark:bg-gray-700 dark:text-white"
         />
-        
+
         <Input
           label="Partners (comma-separated)"
           placeholder="Agency X, Vendor Y"
           value={formData.partners}
-          onChange={(e) => setFormData({ ...formData, partners: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, partners: e.target.value })
+          }
+          className="dark:bg-gray-700 dark:text-white"
         />
-        
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Completion Percentage: {formData.percentComplete}%
           </label>
           <input
@@ -116,8 +136,13 @@ export function ProjectForm({ project, onSubmit }: ProjectFormProps) {
             min="0"
             max="100"
             value={formData.percentComplete}
-            onChange={(e) => setFormData({ ...formData, percentComplete: parseInt(e.target.value) })}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                percentComplete: parseInt(e.target.value),
+              })
+            }
+            className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
           />
         </div>
       </div>
@@ -127,11 +152,16 @@ export function ProjectForm({ project, onSubmit }: ProjectFormProps) {
           type="button"
           variant="outline"
           onClick={() => router.back()}
+          disabled={isSubmitting}
         >
           Cancel
         </Button>
-        <Button type="submit">
-          {project ? 'Update Project' : 'Create Project'}
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting
+            ? 'Creating...'
+            : project
+            ? 'Update Project'
+            : 'Create Project'}
         </Button>
       </div>
     </form>

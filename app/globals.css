@@ -3,9 +3,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Remove the custom border-border class that's causing issues */
-/* Just use Tailwind's standard classes instead */
-
 /* Custom scrollbar styles */
 .scrollbar-thin::-webkit-scrollbar {
   width: 6px;
@@ -13,13 +10,42 @@
 }
 
 .scrollbar-thin::-webkit-scrollbar-track {
-  @apply bg-gray-100;
+  @apply bg-gray-100 dark:bg-gray-800;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 rounded-full;
+  @apply bg-gray-300 dark:bg-gray-600 rounded-full;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-400;
+  @apply bg-gray-400 dark:bg-gray-500;
+}
+
+/* Dark mode transitions */
+* {
+  @apply transition-colors duration-200;
+}
+
+/* Custom select styles for dark mode */
+select {
+  @apply bg-white dark:bg-gray-700 text-gray-900 dark:text-white;
+}
+
+/* Custom input styles for dark mode */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+input[type="number"],
+textarea {
+  @apply bg-white dark:bg-gray-700 text-gray-900 dark:text-white;
+}
+
+/* Progress bar dark mode */
+.progress-bar {
+  @apply bg-gray-200 dark:bg-gray-700;
+}
+
+.progress-bar-fill {
+  @apply bg-blue-600 dark:bg-blue-500;
 }
